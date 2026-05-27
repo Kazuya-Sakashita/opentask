@@ -1,0 +1,58 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+!frontend/.env.local.example
+
+# Rails / Backend
+backend/.bundle
+backend/log/*
+backend/tmp/*
+!backend/log/.keep
+!backend/tmp/.keep
+
+backend/tmp/pids/*
+!backend/tmp/pids/
+!backend/tmp/pids/.keep
+
+backend/config/*.key
+backend/storage/*
+!backend/storage/.keep
+
+backend/public/uploads
+backend/vendor/bundle
+
+backend/db/*.sqlite3
+backend/db/*.sqlite3-journal
+
+# Test / coverage
+backend/coverage/
+coverage/
+
+# Next.js / Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Docker volumes
+postgres_data/
+redis_data/
+
+# Logs
+*.log
