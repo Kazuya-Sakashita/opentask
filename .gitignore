@@ -60,3 +60,6 @@ coverage/
 # Ignore Docker volumes
 postgres_data/
 redis_data/
+
+# Rails cache
+backend/tmp/cache/*
