@@ -94,3 +94,6 @@ coverage/
 
 postgres_data/
 redis_data/
+
+
+backend/config/master.key
