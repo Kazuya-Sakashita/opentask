@@ -25,4 +25,32 @@ RSpec.describe "Api::V1::Todos", type: :request do
       expect(body.first["public_id"]).not_to eq other_todo.public_id
     end
   end
+
+  describe "POST /api/v1/todos" do
+    let!(:user) { create(:user) }
+
+    before do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    end
+
+    context "titleが空のとき" do
+      it "422エラーを返す" do
+        post "/api/v1/todos",
+             params: {
+               todo: {
+                 title: ""
+               }
+             }
+
+        expect(response).to have_http_status(:unprocessable_content)
+
+        body = response.parsed_body
+
+        expect(body["title"]).to eq("Validation Error")
+        expect(body["reason"]).to eq("validation_error")
+        expect(body["status"]).to eq(422)
+        expect(body["errors"]).to have_key("title")
+      end
+    end
+  end
 end
