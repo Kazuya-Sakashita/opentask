@@ -268,52 +268,60 @@ components:
               type: boolean
               example: true
 
-    Error:
+    ProblemDetails:
       type: object
       required:
-        - error
+        - type
+        - title
+        - status
+        - detail
+        - reason
       properties:
-        error:
+        type:
           type: string
-          example: Unauthorized
-
-    ValidationError:
-      type: object
-      required:
-        - errors
-      properties:
+          example: https://opentask.example.com/problems/not-found
+        title:
+          type: string
+          example: Not Found
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: 指定されたリソースが見つかりません
+        reason:
+          type: string
+          example: not_found
         errors:
-          type: array
-          items:
-            type: string
-          example:
-            - Title can't be blank
+          type: object
+          nullable: true
+          additionalProperties: true
 
   responses:
     Unauthorized:
       description: 認証エラー
       content:
-        application/json:
+        application/problem+json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ProblemDetails"
 
     Forbidden:
       description: 認可エラー
       content:
-        application/json:
+        application/problem+json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ProblemDetails"
 
     NotFound:
       description: リソースが見つからない
       content:
-        application/json:
+        application/problem+json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/ProblemDetails"
 
     UnprocessableEntity:
       description: バリデーションエラー
       content:
-        application/json:
+        application/problem+json:
           schema:
-            $ref: "#/components/schemas/ValidationError"
+            $ref: "#/components/schemas/ProblemDetails"

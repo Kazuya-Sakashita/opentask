@@ -39,6 +39,8 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
         expect(response).to have_http_status(:not_found)
 
+        assert_response_schema_confirm(404)
+
         body = response.parsed_body
 
         expect(body["title"]).to eq("Not Found")
@@ -55,6 +57,8 @@ RSpec.describe "Api::V1::Todos", type: :request do
         get "/api/v1/todos/#{todo.public_id}"
 
         expect(response).to have_http_status(:forbidden)
+
+        assert_response_schema_confirm(403)
 
         body = response.parsed_body
 
@@ -82,6 +86,8 @@ RSpec.describe "Api::V1::Todos", type: :request do
              }
 
         expect(response).to have_http_status(:unprocessable_content)
+
+        assert_response_schema_confirm(422)
 
         body = response.parsed_body
 
