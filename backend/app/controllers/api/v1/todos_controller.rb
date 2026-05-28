@@ -4,13 +4,13 @@ class Api::V1::TodosController < ApplicationController
   def index
     todos = policy_scope(Todo)
 
-    render json: todos
+    render json: todos.map { |todo| TodoSerializer.call(todo) }
   end
 
   def show
     authorize @todo
 
-    render json: @todo
+    render json: TodoSerializer.call(@todo)
   end
 
   def create
@@ -19,7 +19,7 @@ class Api::V1::TodosController < ApplicationController
     authorize todo
 
     if todo.save
-      render json: todo, status: :created
+      render json: TodoSerializer.call(todo), status: :created
     else
       render json: { errors: todo.errors.full_messages }, status: :unprocessable_entity
     end
@@ -29,7 +29,7 @@ class Api::V1::TodosController < ApplicationController
     authorize @todo
 
     if @todo.update(todo_params)
-      render json: @todo
+      render json: TodoSerializer.call(@todo)
     else
       render json: { errors: @todo.errors.full_messages }, status: :unprocessable_entity
     end

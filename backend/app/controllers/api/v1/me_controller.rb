@@ -1,5 +1,5 @@
 class Api::V1::MeController < ApplicationController
   def show
-    render json: current_user
+    render json: UserSerializer.call(current_user)
   end
 end
