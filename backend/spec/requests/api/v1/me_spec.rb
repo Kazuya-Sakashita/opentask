@@ -13,6 +13,8 @@ RSpec.describe "Api::V1::Mes", type: :request do
 
       expect(response).to have_http_status(:ok)
 
+      assert_response_schema_confirm(200)
+
       body = response.parsed_body
 
       expect(body["public_id"]).to eq user.public_id

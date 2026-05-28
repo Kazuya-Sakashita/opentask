@@ -16,6 +16,8 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
       expect(response).to have_http_status(:ok)
 
+      assert_response_schema_confirm(200)
+
       body = response.parsed_body
 
       expect(body.length).to eq 1
