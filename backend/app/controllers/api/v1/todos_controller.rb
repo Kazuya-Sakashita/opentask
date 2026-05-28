@@ -21,7 +21,7 @@ class Api::V1::TodosController < ApplicationController
     if todo.save
       render json: TodoSerializer.call(todo), status: :created
     else
-      render json: { errors: todo.errors.full_messages }, status: :unprocessable_entity
+      render_validation_error(todo)
     end
   end
 
@@ -31,7 +31,7 @@ class Api::V1::TodosController < ApplicationController
     if @todo.update(todo_params)
       render json: TodoSerializer.call(@todo)
     else
-      render json: { errors: @todo.errors.full_messages }, status: :unprocessable_entity
+      render_validation_error(@todo)
     end
   end
 
