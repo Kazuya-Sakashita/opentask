@@ -1,27 +1,28 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe TodoPolicy, type: :policy do
-  let(:user) { User.new }
+RSpec.describe TodoPolicy do
+  let!(:user) { create(:user) }
+  let!(:other_user) { create(:user) }
+  let!(:admin) { create(:user, :admin) }
+  let!(:todo) { create(:todo, user:) }
 
-  subject { described_class }
+  describe "#show?" do
+    context "自分のTodoの場合" do
+      it "許可される" do
+        expect(described_class.new(user, todo).show?).to be true
+      end
+    end
 
-  permissions ".scope" do
-    pending "add some examples to (or delete) #{__FILE__}"
-  end
+    context "他人のTodoの場合" do
+      it "許可されない" do
+        expect(described_class.new(other_user, todo).show?).to be false
+      end
+    end
 
-  permissions :show? do
-    pending "add some examples to (or delete) #{__FILE__}"
-  end
-
-  permissions :create? do
-    pending "add some examples to (or delete) #{__FILE__}"
-  end
-
-  permissions :update? do
-    pending "add some examples to (or delete) #{__FILE__}"
-  end
-
-  permissions :destroy? do
-    pending "add some examples to (or delete) #{__FILE__}"
+    context "管理者の場合" do
+      it "許可される" do
+        expect(described_class.new(admin, todo).show?).to be true
+      end
+    end
   end
 end
