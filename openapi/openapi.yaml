@@ -4,4 +4,10 @@ info:
   title: OpenTask API
   version: 1.0.0
 
-paths: {}
+paths:
+  /api/v1/todos:
+    get:
+      summary: Todo一覧取得
+      responses:
+        "200":
+          description: OK
