@@ -3,11 +3,317 @@ openapi: 3.0.3
 info:
   title: OpenTask API
   version: 1.0.0
+  description: |
+    OpenTask の API 仕様です。
+    Next.js + Rails API + Supabase Auth を前提とした Todo アプリです。
+
+servers:
+  - url: http://localhost:3000
+    description: Local Rails API
+
+tags:
+  - name: Me
+    description: ログイン中ユーザー
+  - name: Todos
+    description: Todo管理
 
 paths:
-  /api/v1/todos:
+  /api/v1/me:
     get:
-      summary: Todo一覧取得
+      tags:
+        - Me
+      summary: ログイン中ユーザー情報取得
+      operationId: getMe
+      security:
+        - BearerAuth: []
       responses:
         "200":
-          description: OK
+          description: ログイン中ユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/todos:
+    get:
+      tags:
+        - Todos
+      summary: Todo一覧取得
+      operationId: listTodos
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Todo一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+
+    post:
+      tags:
+        - Todos
+      summary: Todo作成
+      operationId: createTodo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoCreateRequest"
+      responses:
+        "201":
+          description: Todo作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /api/v1/todos/{todoId}:
+    get:
+      tags:
+        - Todos
+      summary: Todo詳細取得
+      operationId: getTodo
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TodoId"
+      responses:
+        "200":
+          description: Todo詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      tags:
+        - Todos
+      summary: Todo更新
+      operationId: updateTodo
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TodoId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoUpdateRequest"
+      responses:
+        "200":
+          description: Todo更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+    delete:
+      tags:
+        - Todos
+      summary: Todo論理削除
+      operationId: deleteTodo
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TodoId"
+      responses:
+        "204":
+          description: Todo削除成功
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase Auth のアクセストークンを利用します。
+
+  parameters:
+    TodoId:
+      name: todoId
+      in: path
+      required: true
+      description: Todoの public_id
+      schema:
+        type: string
+        example: jZsTMdhGxAzBi76T7LgFE1kEFj
+
+  schemas:
+    User:
+      type: object
+      required:
+        - public_id
+        - email
+        - name
+        - role
+      properties:
+        public_id:
+          type: string
+          example: XVfJTZouHLpN1hnQCSY5i1EeqQ
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: テストユーザー
+        role:
+          type: string
+          enum:
+            - user
+            - admin
+          example: user
+
+    Todo:
+      type: object
+      required:
+        - public_id
+        - title
+        - completed
+        - created_at
+        - updated_at
+      properties:
+        public_id:
+          type: string
+          example: jZsTMdhGxAzBi76T7LgFE1kEFj
+        title:
+          type: string
+          example: 最初のTodo
+        description:
+          type: string
+          nullable: true
+          example: 動作確認用のTodo
+        completed:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-05-28T02:58:04Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-05-28T02:58:04Z"
+
+    TodoCreateRequest:
+      type: object
+      required:
+        - todo
+      properties:
+        todo:
+          type: object
+          required:
+            - title
+          properties:
+            title:
+              type: string
+              example: 新しいTodo
+            description:
+              type: string
+              nullable: true
+              example: Todoの説明
+            completed:
+              type: boolean
+              example: false
+
+    TodoUpdateRequest:
+      type: object
+      required:
+        - todo
+      properties:
+        todo:
+          type: object
+          properties:
+            title:
+              type: string
+              example: 更新後のTodo
+            description:
+              type: string
+              nullable: true
+              example: 更新後の説明
+            completed:
+              type: boolean
+              example: true
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: Unauthorized
+
+    ValidationError:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+          example:
+            - Title can't be blank
+
+  responses:
+    Unauthorized:
+      description: 認証エラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Forbidden:
+      description: 認可エラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    UnprocessableEntity:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
