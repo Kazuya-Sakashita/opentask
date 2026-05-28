@@ -4,10 +4,15 @@ class ApplicationController < ActionController::API
 
   rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
   rescue_from Pundit::NotAuthorizedError, with: :render_forbidden
+  rescue_from UnauthorizedError, with: :render_unauthorized
 
   private
 
   def current_user
-    User.first
+    user = User.first
+
+    raise UnauthorizedError if user.blank?
+
+    user
   end
 end

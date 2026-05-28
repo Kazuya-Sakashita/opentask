@@ -53,6 +53,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Todo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
     post:
       tags:

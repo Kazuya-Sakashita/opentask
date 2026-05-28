@@ -47,4 +47,14 @@ module ProblemRenderable
       reason: "forbidden"
     )
   end
+
+  def render_unauthorized
+    render_problem(
+      type: "https://opentask.example.com/problems/unauthorized",
+      title: "Unauthorized",
+      status: :unauthorized,
+      detail: "認証が必要です",
+      reason: "unauthorized"
+    )
+  end
 end

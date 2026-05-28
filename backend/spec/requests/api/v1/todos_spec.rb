@@ -7,22 +7,46 @@ RSpec.describe "Api::V1::Todos", type: :request do
     let!(:todo) { create(:todo, user:) }
     let!(:other_todo) { create(:todo, user: other_user) }
 
-    before do
-      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    context "ログインしている場合" do
+      before do
+        allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+      end
+
+      it "ログインユーザーのTodo一覧を取得できる" do
+        get "/api/v1/todos"
+
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+
+        body = response.parsed_body
+
+        expect(body.length).to eq 1
+        expect(body.first["public_id"]).to eq todo.public_id
+        expect(body.first["public_id"]).not_to eq other_todo.public_id
+      end
     end
 
-    it "ログインユーザーのTodo一覧を取得できる" do
-      get "/api/v1/todos"
+    context "未ログインの場合" do
+      before do
+        allow_any_instance_of(ApplicationController)
+          .to receive(:current_user)
+          .and_raise(UnauthorizedError)
+      end
 
-      expect(response).to have_http_status(:ok)
+      it "401エラーを返す" do
+        get "/api/v1/todos"
 
-      assert_response_schema_confirm(200)
+        expect(response).to have_http_status(:unauthorized)
 
-      body = response.parsed_body
+        assert_response_schema_confirm(401)
 
-      expect(body.length).to eq 1
-      expect(body.first["public_id"]).to eq todo.public_id
-      expect(body.first["public_id"]).not_to eq other_todo.public_id
+        body = response.parsed_body
+
+        expect(body["title"]).to eq("Unauthorized")
+        expect(body["reason"]).to eq("unauthorized")
+        expect(body["status"]).to eq(401)
+      end
     end
   end
 
