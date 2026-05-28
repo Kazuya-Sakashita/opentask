@@ -37,4 +37,14 @@ module ProblemRenderable
       reason: "not_found"
     )
   end
+
+  def render_forbidden
+    render_problem(
+      type: "https://opentask.example.com/problems/forbidden",
+      title: "Forbidden",
+      status: :forbidden,
+      detail: "この操作を実行する権限がありません",
+      reason: "forbidden"
+    )
+  end
 end

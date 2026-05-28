@@ -46,6 +46,23 @@ RSpec.describe "Api::V1::Todos", type: :request do
         expect(body["status"]).to eq(404)
       end
     end
+
+    context "他人のTodoの場合" do
+      let!(:other_user) { create(:user) }
+      let!(:todo) { create(:todo, user: other_user) }
+
+      it "403エラーを返す" do
+        get "/api/v1/todos/#{todo.public_id}"
+
+        expect(response).to have_http_status(:forbidden)
+
+        body = response.parsed_body
+
+        expect(body["title"]).to eq("Forbidden")
+        expect(body["reason"]).to eq("forbidden")
+        expect(body["status"]).to eq(403)
+      end
+    end
   end
 
   describe "POST /api/v1/todos" do
