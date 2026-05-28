@@ -26,6 +26,28 @@ RSpec.describe "Api::V1::Todos", type: :request do
     end
   end
 
+  describe "GET /api/v1/todos/:todoId" do
+    let!(:user) { create(:user) }
+
+    before do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    end
+
+    context "存在しないTodoの場合" do
+      it "404エラーを返す" do
+        get "/api/v1/todos/not-found-id"
+
+        expect(response).to have_http_status(:not_found)
+
+        body = response.parsed_body
+
+        expect(body["title"]).to eq("Not Found")
+        expect(body["reason"]).to eq("not_found")
+        expect(body["status"]).to eq(404)
+      end
+    end
+  end
+
   describe "POST /api/v1/todos" do
     let!(:user) { create(:user) }
 

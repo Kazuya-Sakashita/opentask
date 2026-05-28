@@ -27,4 +27,14 @@ module ProblemRenderable
       errors: record.errors.to_hash
     )
   end
+
+  def render_not_found
+    render_problem(
+      type: "https://opentask.example.com/problems/not-found",
+      title: "Not Found",
+      status: :not_found,
+      detail: "指定されたリソースが見つかりません",
+      reason: "not_found"
+    )
+  end
 end
