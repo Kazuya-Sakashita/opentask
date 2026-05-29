@@ -227,6 +227,8 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
         expect(response).to have_http_status(:no_content)
 
+        assert_response_schema_confirm(204)
+
         expect(todo.reload.deleted_at).to be_present
       end
     end
