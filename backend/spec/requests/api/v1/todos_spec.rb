@@ -122,4 +122,136 @@ RSpec.describe "Api::V1::Todos", type: :request do
       end
     end
   end
+
+  describe "PATCH /api/v1/todos/:todoId" do
+    let!(:user) { create(:user) }
+
+    before do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    end
+
+    context "自分のTodoの場合" do
+      let!(:todo) { create(:todo, user:) }
+
+      it "Todoを更新できる" do
+        patch "/api/v1/todos/#{todo.public_id}",
+              params: {
+                todo: {
+                  title: "更新後のTodo",
+                  completed: true
+                }
+              }
+
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+
+        body = response.parsed_body
+
+        expect(body["public_id"]).to eq(todo.public_id)
+        expect(body["title"]).to eq("更新後のTodo")
+        expect(body["completed"]).to be true
+      end
+    end
+
+    context "titleが空のとき" do
+      let!(:todo) { create(:todo, user:) }
+
+      it "422エラーを返す" do
+        patch "/api/v1/todos/#{todo.public_id}",
+              params: {
+                todo: {
+                  title: ""
+                }
+              }
+
+        expect(response).to have_http_status(:unprocessable_content)
+
+        assert_response_schema_confirm(422)
+
+        body = response.parsed_body
+
+        expect(body["title"]).to eq("Validation Error")
+        expect(body["reason"]).to eq("validation_error")
+        expect(body["status"]).to eq(422)
+        expect(body["errors"]).to have_key("title")
+      end
+    end
+
+    context "存在しないTodoの場合" do
+      it "404エラーを返す" do
+        patch "/api/v1/todos/not-found-id",
+              params: {
+                todo: {
+                  title: "更新後のTodo"
+                }
+              }
+
+        expect(response).to have_http_status(:not_found)
+
+        assert_response_schema_confirm(404)
+      end
+    end
+
+    context "他人のTodoの場合" do
+      let!(:other_user) { create(:user) }
+      let!(:todo) { create(:todo, user: other_user) }
+
+      it "403エラーを返す" do
+        patch "/api/v1/todos/#{todo.public_id}",
+              params: {
+                todo: {
+                  title: "更新後のTodo"
+                }
+              }
+
+        expect(response).to have_http_status(:forbidden)
+
+        assert_response_schema_confirm(403)
+      end
+    end
+  end
+
+  describe "DELETE /api/v1/todos/:todoId" do
+    let!(:user) { create(:user) }
+
+    before do
+      allow_any_instance_of(ApplicationController).to receive(:current_user).and_return(user)
+    end
+
+    context "自分のTodoの場合" do
+      let!(:todo) { create(:todo, user:) }
+
+      it "Todoを論理削除できる" do
+        delete "/api/v1/todos/#{todo.public_id}"
+
+        expect(response).to have_http_status(:no_content)
+
+        expect(todo.reload.deleted_at).to be_present
+      end
+    end
+
+    context "存在しないTodoの場合" do
+      it "404エラーを返す" do
+        delete "/api/v1/todos/not-found-id"
+
+        expect(response).to have_http_status(:not_found)
+
+        assert_response_schema_confirm(404)
+      end
+    end
+
+    context "他人のTodoの場合" do
+      let!(:other_user) { create(:user) }
+      let!(:todo) { create(:todo, user: other_user) }
+
+      it "403エラーを返す" do
+        delete "/api/v1/todos/#{todo.public_id}"
+
+        expect(response).to have_http_status(:forbidden)
+
+        assert_response_schema_confirm(403)
+      end
+    end
+  end
 end
