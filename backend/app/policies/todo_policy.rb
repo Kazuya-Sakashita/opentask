@@ -4,7 +4,7 @@ class TodoPolicy < ApplicationPolicy
   end
 
   def show?
-    user.admin? || record.user_id == user.id
+    user.admin? || own_todo?
   end
 
   def create?
@@ -12,20 +12,24 @@ class TodoPolicy < ApplicationPolicy
   end
 
   def update?
-    user.admin? || record.user_id == user.id
+    show?
   end
 
   def destroy?
-    user.admin? || record.user_id == user.id
+    show?
   end
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      if user.admin?
-        scope.active
-      else
-        scope.active.where(user:)
-      end
+      return scope.active if user.admin?
+
+      scope.active.where(user:)
     end
+  end
+
+  private
+
+  def own_todo?
+    record.user_id == user.id
   end
 end
