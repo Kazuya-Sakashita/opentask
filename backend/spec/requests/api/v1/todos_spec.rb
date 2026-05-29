@@ -28,12 +28,6 @@ RSpec.describe "Api::V1::Todos", type: :request do
     end
 
     context "未ログインの場合" do
-      before do
-        allow_any_instance_of(ApplicationController)
-          .to receive(:current_user)
-          .and_raise(UnauthorizedError)
-      end
-
       it "401エラーを返す" do
         get "/api/v1/todos"
 

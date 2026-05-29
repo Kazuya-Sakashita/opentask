@@ -9,10 +9,22 @@ class ApplicationController < ActionController::API
   private
 
   def current_user
-    user = User.first
+    @current_user ||= begin
+      payload = Auth::SupabaseJwtVerifier.new(bearer_token).call
+      supabase_user_id = payload.fetch("sub")
 
-    raise UnauthorizedError if user.blank?
+      User.find_by!(supabase_user_id:)
+    rescue KeyError, ActiveRecord::RecordNotFound
+      raise UnauthorizedError
+    end
+  end
 
-    user
+  def bearer_token
+    authorization_header = request.headers["Authorization"]
+    scheme, token = authorization_header.to_s.split
+
+    raise UnauthorizedError unless scheme == "Bearer" && token.present?
+
+    token
   end
 end
