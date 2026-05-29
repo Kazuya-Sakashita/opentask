@@ -9,7 +9,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
     context "ログインしている場合" do
       it "ログインユーザーのTodo一覧を取得できる" do
-        get "/api/v1/todos", headers: authenticate_as(user)
+        get "/api/v1/todos", headers: auth_headers(user)
 
         expect(response).to have_http_status(:ok)
 
@@ -45,7 +45,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
     context "存在しないTodoの場合" do
       it "404エラーを返す" do
-        get "/api/v1/todos/not-found-id", headers: authenticate_as(user)
+        get "/api/v1/todos/not-found-id", headers: auth_headers(user)
 
         expect(response).to have_http_status(:not_found)
 
@@ -64,7 +64,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
       let!(:todo) { create(:todo, user: other_user) }
 
       it "403エラーを返す" do
-        get "/api/v1/todos/#{todo.public_id}", headers: authenticate_as(user)
+        get "/api/v1/todos/#{todo.public_id}", headers: auth_headers(user)
 
         expect(response).to have_http_status(:forbidden)
 
@@ -82,6 +82,26 @@ RSpec.describe "Api::V1::Todos", type: :request do
   describe "POST /api/v1/todos" do
     let!(:user) { create(:user) }
 
+    context "有効なパラメータの場合" do
+      it "Todoを作成できる" do
+        expect do
+          post "/api/v1/todos",
+               params: {
+                 todo: {
+                   title: "新しいTodo",
+                   description: "Todoの説明",
+                   completed: false
+                 }
+               },
+               headers: auth_headers(user)
+        end.to change(Todo, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+
+        assert_response_schema_confirm(201)
+      end
+    end
+
     context "titleが空のとき" do
       it "422エラーを返す" do
         post "/api/v1/todos",
@@ -90,7 +110,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
                  title: ""
                }
              },
-             headers: authenticate_as(user)
+             headers: auth_headers(user)
 
         expect(response).to have_http_status(:unprocessable_content)
 
@@ -120,7 +140,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
                   completed: true
                 }
               },
-              headers: authenticate_as(user)
+              headers: auth_headers(user)
 
         expect(response).to have_http_status(:ok)
 
@@ -144,7 +164,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
                   title: ""
                 }
               },
-              headers: authenticate_as(user)
+              headers: auth_headers(user)
 
         expect(response).to have_http_status(:unprocessable_content)
 
@@ -167,7 +187,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
                   title: "更新後のTodo"
                 }
               },
-              headers: authenticate_as(user)
+              headers: auth_headers(user)
 
         expect(response).to have_http_status(:not_found)
 
@@ -186,7 +206,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
                   title: "更新後のTodo"
                 }
               },
-              headers: authenticate_as(user)
+              headers: auth_headers(user)
 
         expect(response).to have_http_status(:forbidden)
 
@@ -202,7 +222,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
       let!(:todo) { create(:todo, user:) }
 
       it "Todoを論理削除できる" do
-        delete "/api/v1/todos/#{todo.public_id}", headers: authenticate_as(user)
+        delete "/api/v1/todos/#{todo.public_id}", headers: auth_headers(user)
 
         expect(response).to have_http_status(:no_content)
 
@@ -214,7 +234,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
     context "存在しないTodoの場合" do
       it "404エラーを返す" do
-        delete "/api/v1/todos/not-found-id", headers: authenticate_as(user)
+        delete "/api/v1/todos/not-found-id", headers: auth_headers(user)
 
         expect(response).to have_http_status(:not_found)
 
@@ -227,7 +247,7 @@ RSpec.describe "Api::V1::Todos", type: :request do
       let!(:todo) { create(:todo, user: other_user) }
 
       it "403エラーを返す" do
-        delete "/api/v1/todos/#{todo.public_id}", headers: authenticate_as(user)
+        delete "/api/v1/todos/#{todo.public_id}", headers: auth_headers(user)
 
         expect(response).to have_http_status(:forbidden)
 
