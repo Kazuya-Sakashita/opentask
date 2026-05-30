@@ -46,21 +46,20 @@ RSpec.describe "Api::V1::Todos", type: :request do
     context "自分のTodoの場合" do
       let!(:todo) { create(:todo, user:) }
 
-      it "Todo詳細を取得できる" do
-        get "/api/v1/todos/#{todo.public_id}", headers: auth_headers(user)
+      before do
+        delete "/api/v1/todos/#{todo.public_id}", headers: auth_headers(user)
+      end
 
-        expect(response).to have_http_status(:ok)
+      it "Todoを論理削除できる" do
+        expect(response).to have_http_status(:no_content)
 
-        assert_response_schema_confirm(200)
+        assert_response_schema_confirm(204)
 
-        body = response.parsed_body
+        expect(todo.reload.deleted_at).to be_present
+      end
 
-        expect(body).to include(
-          "public_id" => todo.public_id,
-          "title" => todo.title,
-          "description" => todo.description,
-          "completed" => todo.completed
-        )
+      it "レスポンスボディを返さない" do
+        expect(response.body).to be_blank
       end
     end
 
