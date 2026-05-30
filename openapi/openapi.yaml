@@ -14,6 +14,8 @@ servers:
 tags:
   - name: Me
     description: ログイン中ユーザー
+  - name: Users
+    description: ユーザー管理
   - name: Todos
     description: Todo管理
 
@@ -35,6 +37,30 @@ paths:
                 $ref: "#/components/schemas/User"
         "401":
           $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: ユーザー詳細取得
+      operationId: getUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: ユーザー詳細
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /api/v1/todos:
     get:
@@ -164,6 +190,15 @@ components:
       description: Supabase Auth のアクセストークンを利用します。
 
   parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      description: Userの public_id
+      schema:
+        type: string
+        example: XVfJTZouHLpN1hnQCSY5i1EeqQ
+
     TodoId:
       name: todoId
       in: path
