@@ -55,7 +55,12 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
         body = response.parsed_body
 
-        expect(body["public_id"]).to eq(todo.public_id)
+        expect(body).to include(
+          "public_id" => todo.public_id,
+          "title" => todo.title,
+          "description" => todo.description,
+          "completed" => todo.completed
+        )
       end
     end
 
