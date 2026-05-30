@@ -5,7 +5,10 @@ RSpec.describe "Api::V1::Todos", type: :request do
     let!(:user) { create(:user) }
     let!(:other_user) { create(:user) }
     let!(:todo) { create(:todo, user:) }
-    let!(:other_todo) { create(:todo, user: other_user) }
+
+    before do
+      create(:todo, user: other_user)
+    end
 
     context "ログインしている場合" do
       it "ログインユーザーのTodo一覧を取得できる" do
@@ -17,9 +20,14 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
         body = response.parsed_body
 
-        expect(body.length).to eq 1
-        expect(body.first["public_id"]).to eq todo.public_id
-        expect(body.first["public_id"]).not_to eq other_todo.public_id
+        expect(body).to contain_exactly(
+          include(
+            "public_id" => todo.public_id,
+            "title" => todo.title,
+            "description" => todo.description,
+            "completed" => todo.completed
+          )
+        )
       end
     end
 
