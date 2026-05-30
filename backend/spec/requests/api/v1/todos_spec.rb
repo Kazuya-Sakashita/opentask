@@ -35,6 +35,22 @@ RSpec.describe "Api::V1::Todos", type: :request do
   describe "GET /api/v1/todos/:todoId" do
     let!(:user) { create(:user) }
 
+    context "自分のTodoの場合" do
+      let!(:todo) { create(:todo, user:) }
+
+      it "Todo詳細を取得できる" do
+        get "/api/v1/todos/#{todo.public_id}", headers: auth_headers(user)
+
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+
+        body = response.parsed_body
+
+        expect(body["public_id"]).to eq(todo.public_id)
+      end
+    end
+
     context "存在しないTodoの場合" do
       before do
         get "/api/v1/todos/not-found-id", headers: auth_headers(user)
