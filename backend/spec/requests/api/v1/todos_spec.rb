@@ -141,25 +141,39 @@ RSpec.describe "Api::V1::Todos", type: :request do
 
     context "自分のTodoの場合" do
       let!(:todo) { create(:todo, user:) }
+      let!(:valid_params) do
+        {
+          todo: {
+            title: "更新後のTodo",
+            completed: true
+          }
+        }
+      end
+
+      before do
+        patch "/api/v1/todos/#{todo.public_id}",
+              params: valid_params,
+              headers: auth_headers(user)
+      end
 
       it "Todoを更新できる" do
-        patch "/api/v1/todos/#{todo.public_id}",
-              params: {
-                todo: {
-                  title: "更新後のTodo",
-                  completed: true
-                }
-              },
-              headers: auth_headers(user)
-
-        expect(response).to have_http_status(:ok)
-
-        assert_response_schema_confirm(200)
-
         todo.reload
 
         expect(todo.title).to eq("更新後のTodo")
         expect(todo.completed).to be true
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+      end
+
+      it "更新したTodoを返す" do
+        body = response.parsed_body
+
+        expect(body).to include(
+          "public_id" => todo.public_id,
+          "title" => "更新後のTodo",
+          "completed" => true
+        )
       end
     end
 
