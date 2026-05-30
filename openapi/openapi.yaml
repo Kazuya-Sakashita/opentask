@@ -53,15 +53,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Todo"
-              examples:
-                success:
-                  value:
-                    - public_id: jZsTMdhGxAzBi76T7LgFE1kEFj
-                      title: 買い物
-                      description: 牛乳を買う
-                      completed: false
-                      created_at: "2026-05-28T02:58:04Z"
-                      updated_at: "2026-05-28T02:58:04Z"
         "401":
           $ref: "#/components/responses/Unauthorized"
 
@@ -78,13 +69,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/TodoCreateRequest"
-            examples:
-              default:
-                value:
-                  todo:
-                    title: 新しいTodo
-                    description: Todoの説明
-                    completed: false
       responses:
         "201":
           description: Todo作成成功
@@ -92,15 +76,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Todo"
-              examples:
-                success:
-                  value:
-                    public_id: jZsTMdhGxAzBi76T7LgFE1kEFj
-                    title: 新しいTodo
-                    description: Todoの説明
-                    completed: false
-                    created_at: "2026-05-28T02:58:04Z"
-                    updated_at: "2026-05-28T02:58:04Z"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":
@@ -123,15 +98,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Todo"
-              examples:
-                success:
-                  value:
-                    public_id: jZsTMdhGxAzBi76T7LgFE1kEFj
-                    title: 最初のTodo
-                    description: 動作確認用のTodo
-                    completed: false
-                    created_at: "2026-05-28T02:58:04Z"
-                    updated_at: "2026-05-28T02:58:04Z"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -154,13 +120,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/TodoUpdateRequest"
-            examples:
-              default:
-                value:
-                  todo:
-                    title: 更新後のTodo
-                    description: 更新後の説明
-                    completed: true
       responses:
         "200":
           description: Todo更新成功
@@ -168,15 +127,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Todo"
-              examples:
-                success:
-                  value:
-                    public_id: jZsTMdhGxAzBi76T7LgFE1kEFj
-                    title: 更新後のTodo
-                    description: 更新後の説明
-                    completed: true
-                    created_at: "2026-05-28T02:58:04Z"
-                    updated_at: "2026-05-28T03:10:00Z"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -356,6 +306,14 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            unauthorized:
+              value:
+                type: https://opentask.example.com/problems/unauthorized
+                title: Unauthorized
+                status: 401
+                detail: 認証が必要です
+                reason: unauthorized
 
     Forbidden:
       description: 認可エラー
@@ -363,6 +321,14 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            forbidden:
+              value:
+                type: https://opentask.example.com/problems/forbidden
+                title: Forbidden
+                status: 403
+                detail: この操作を実行する権限がありません
+                reason: forbidden
 
     NotFound:
       description: リソースが見つからない
@@ -370,6 +336,14 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            not_found:
+              value:
+                type: https://opentask.example.com/problems/not-found
+                title: Not Found
+                status: 404
+                detail: 指定されたリソースが見つかりません
+                reason: not_found
 
     UnprocessableEntity:
       description: バリデーションエラー
@@ -377,3 +351,14 @@ components:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/ProblemDetails"
+          examples:
+            validation_error:
+              value:
+                type: https://opentask.example.com/problems/validation-error
+                title: Validation Error
+                status: 422
+                detail: 入力内容に誤りがあります
+                reason: validation_error
+                errors:
+                  title:
+                    - を入力してください
