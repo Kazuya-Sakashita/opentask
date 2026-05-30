@@ -23,6 +23,14 @@ RSpec.describe "Api::V1::Users", type: :request do
       end
     end
 
+    context "未認証の場合" do
+      before do
+        get "/api/v1/users/#{user.public_id}"
+      end
+
+      it_behaves_like "unauthorized response"
+    end
+
     context "他人の場合" do
       let!(:other_user) { create(:user) }
 
