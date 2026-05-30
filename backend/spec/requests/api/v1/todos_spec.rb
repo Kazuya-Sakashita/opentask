@@ -75,22 +75,36 @@ RSpec.describe "Api::V1::Todos", type: :request do
     let!(:user) { create(:user) }
 
     context "有効なパラメータの場合" do
-      it "Todoを作成できる" do
-        expect do
-          post "/api/v1/todos",
-               params: {
-                 todo: {
-                   title: "新しいTodo",
-                   description: "Todoの説明",
-                   completed: false
-                 }
-               },
-               headers: auth_headers(user)
-        end.to change(Todo, :count).by(1)
+      let!(:valid_params) do
+        {
+          todo: {
+            title: "新しいTodo",
+            description: "Todoの説明",
+            completed: false
+          }
+        }
+      end
 
+      before do
+        post "/api/v1/todos",
+             params: valid_params,
+             headers: auth_headers(user)
+      end
+
+      it "Todoを作成できる" do
+        expect(Todo.count).to eq(1)
         expect(response).to have_http_status(:created)
 
         assert_response_schema_confirm(201)
+      end
+
+      it "作成したTodoを返す" do
+        body = response.parsed_body
+
+        expect(body["public_id"]).to be_present
+        expect(body["title"]).to eq("新しいTodo")
+        expect(body["description"]).to eq("Todoの説明")
+        expect(body["completed"]).to be false
       end
     end
 
