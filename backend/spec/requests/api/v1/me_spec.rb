@@ -5,24 +5,8 @@ RSpec.describe "Api::V1::Me", type: :request do
     context "認証済みの場合" do
       let!(:user) { create(:user, supabase_user_id: "supabase-user-id") }
 
-      before do
-        verifier = instance_double(Auth::SupabaseJwtVerifier)
-
-        allow(Auth::SupabaseJwtVerifier)
-          .to receive(:new)
-          .with("valid-token")
-          .and_return(verifier)
-
-        allow(verifier)
-          .to receive(:call)
-          .and_return({ "sub" => user.supabase_user_id })
-      end
-
       it "現在のユーザー情報を取得できる" do
-        get "/api/v1/me",
-            headers: {
-              "Authorization" => "Bearer valid-token"
-            }
+        get "/api/v1/me", headers: auth_headers(user)
 
         expect(response).to have_http_status(:ok)
 
@@ -38,19 +22,11 @@ RSpec.describe "Api::V1::Me", type: :request do
     end
 
     context "未認証の場合" do
-      it "401エラーを返す" do
+      before do
         get "/api/v1/me"
-
-        expect(response).to have_http_status(:unauthorized)
-
-        assert_response_schema_confirm(401)
-
-        body = response.parsed_body
-
-        expect(body["title"]).to eq("Unauthorized")
-        expect(body["reason"]).to eq("unauthorized")
-        expect(body["status"]).to eq(401)
       end
+
+      it_behaves_like "unauthorized response"
     end
   end
 end
