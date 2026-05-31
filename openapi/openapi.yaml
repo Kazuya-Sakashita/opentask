@@ -38,6 +38,34 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /api/v1/users:
+    get:
+      tags:
+        - Users
+      summary: ユーザー一覧取得
+      operationId: listUsers
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: ユーザー一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+              examples:
+                success:
+                  summary: ユーザー一覧取得成功
+                  value:
+                    - public_id: XVfJTZouHLpN1hnQCSY5i1EeqQ
+                      email: user@example.com
+                      name: テストユーザー
+                      role: user
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   /api/v1/users/{userId}:
     get:
       tags:

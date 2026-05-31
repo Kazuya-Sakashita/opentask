@@ -1,6 +1,60 @@
 require "rails_helper"
 
 RSpec.describe "Api::V1::Users", type: :request do
+  describe "GET /api/v1/users" do
+    let!(:user) { create(:user) }
+    let!(:other_user) { create(:user) }
+
+    context "一般ユーザーの場合" do
+      it "自分自身のみ取得できる" do
+        get "/api/v1/users", headers: auth_headers(user)
+
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+
+        body = response.parsed_body
+
+        expect(body).to contain_exactly(
+          include(
+            "public_id" => user.public_id,
+            "email" => user.email,
+            "name" => user.name,
+            "role" => user.role
+          )
+        )
+      end
+    end
+
+    context "未認証の場合" do
+      before do
+        get "/api/v1/users"
+      end
+
+      it_behaves_like "unauthorized response"
+    end
+
+    context "管理者の場合" do
+      let!(:admin) { create(:user, role: "admin") }
+
+      it "全ユーザーを取得できる" do
+        get "/api/v1/users", headers: auth_headers(admin)
+
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+
+        body = response.parsed_body
+
+        expect(body).to contain_exactly(
+          include("public_id" => user.public_id),
+          include("public_id" => other_user.public_id),
+          include("public_id" => admin.public_id)
+        )
+      end
+    end
+  end
+
   describe "GET /api/v1/users/:userId" do
     let!(:user) { create(:user) }
 

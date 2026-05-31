@@ -3,6 +3,12 @@ module Api
     class UsersController < ApplicationController
       before_action :set_user, only: %i[show]
 
+      def index
+        users = policy_scope(User)
+
+        render json: users.map { |user| UserSerializer.call(user) }
+      end
+
       def show
         authorize @user
 
