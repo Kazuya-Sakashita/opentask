@@ -5,14 +5,25 @@ RSpec.describe "Api::V1::Users", type: :request do
     let!(:user) { create(:user) }
 
     context "自分自身の場合" do
-      it "ユーザー情報を取得できる" do
+      before do
         get "/api/v1/users/#{user.public_id}", headers: auth_headers(user)
+      end
 
+      it "ユーザー情報を取得できる" do
         expect(response).to have_http_status(:ok)
 
         assert_response_schema_confirm(200)
+      end
 
+      it "ユーザー情報を返す" do
         body = response.parsed_body
+
+        expect(body.keys).to contain_exactly(
+          "public_id",
+          "email",
+          "name",
+          "role"
+        )
 
         expect(body).to include(
           "public_id" => user.public_id,
@@ -53,14 +64,25 @@ RSpec.describe "Api::V1::Users", type: :request do
       let!(:admin) { create(:user, role: "admin") }
       let!(:other_user) { create(:user) }
 
-      it "ユーザー情報を取得できる" do
+      before do
         get "/api/v1/users/#{other_user.public_id}", headers: auth_headers(admin)
+      end
 
+      it "ユーザー情報を取得できる" do
         expect(response).to have_http_status(:ok)
 
         assert_response_schema_confirm(200)
+      end
 
+      it "ユーザー情報を返す" do
         body = response.parsed_body
+
+        expect(body.keys).to contain_exactly(
+          "public_id",
+          "email",
+          "name",
+          "role"
+        )
 
         expect(body).to include(
           "public_id" => other_user.public_id,
