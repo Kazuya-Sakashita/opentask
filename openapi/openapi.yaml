@@ -55,6 +55,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+              examples:
+                success:
+                  summary: ユーザー取得成功
+                  value:
+                    public_id: XVfJTZouHLpN1hnQCSY5i1EeqQ
+                    email: user@example.com
+                    name: テストユーザー
+                    role: user
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
