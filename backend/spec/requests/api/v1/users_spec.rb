@@ -194,6 +194,20 @@ RSpec.describe "Api::V1::Users", type: :request do
       end
     end
 
+    context "nameが空の場合" do
+      before do
+        patch "/api/v1/users/#{user.public_id}",
+              params: {
+                user: {
+                  name: ""
+                }
+              },
+              headers: auth_headers(user)
+      end
+
+      it_behaves_like "validation error response", "name"
+    end
+
     context "未認証の場合" do
       before do
         patch "/api/v1/users/#{user.public_id}",

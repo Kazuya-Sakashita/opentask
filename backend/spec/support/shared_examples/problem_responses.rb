@@ -40,7 +40,7 @@ RSpec.shared_examples "not found response" do
   end
 end
 
-RSpec.shared_examples "validation error response" do
+RSpec.shared_examples "validation error response" do |error_key = "title"|
   it "422エラーを返す" do
     expect(response).to have_http_status(:unprocessable_content)
 
@@ -51,6 +51,6 @@ RSpec.shared_examples "validation error response" do
     expect(body["title"]).to eq("Validation Error")
     expect(body["reason"]).to eq("validation_error")
     expect(body["status"]).to eq(422)
-    expect(body["errors"]).to have_key("title")
+    expect(body["errors"]).to have_key(error_key)
   end
 end
