@@ -98,6 +98,50 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+    patch:
+      tags:
+        - Users
+      summary: ユーザー情報更新
+      operationId: updateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+            examples:
+              default:
+                value:
+                  user:
+                    name: 更新後ユーザー
+      responses:
+        "200":
+          description: ユーザー更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                success:
+                  summary: ユーザー更新成功
+                  value:
+                    public_id: XVfJTZouHLpN1hnQCSY5i1EeqQ
+                    email: user@example.com
+                    name: 更新後ユーザー
+                    role: user
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
   /api/v1/todos:
     get:
       tags:
@@ -269,6 +313,20 @@ components:
             - user
             - admin
           example: user
+
+    UserUpdateRequest:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              example: 更新後ユーザー
 
     Todo:
       type: object
