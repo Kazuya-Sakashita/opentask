@@ -1,9 +1,12 @@
-// src/hooks/useCurrentUser.ts
-
+import { useAuth } from "@/providers/AuthProvider";
 import { useMe } from "@/hooks/api/useMe";
 
-export function useCurrentUser(token?: string) {
-  const { data, error, isLoading, mutate } = useMe(token);
+export function useCurrentUser() {
+  const { accessToken } = useAuth();
+
+  const { data, error, isLoading, mutate } = useMe(
+    accessToken ?? undefined
+  );
 
   return {
     user: data,
