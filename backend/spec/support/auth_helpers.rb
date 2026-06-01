@@ -1,18 +1,22 @@
 module AuthHelpers
-  def authenticate_as(user)
+  def authenticate_as(user, token: "test-token")
     verifier = instance_double(Auth::SupabaseJwtVerifier)
 
     allow(Auth::SupabaseJwtVerifier)
       .to receive(:new)
-      .with("test-token")
+      .with(token)
       .and_return(verifier)
 
     allow(verifier)
       .to receive(:call)
-      .and_return({ "sub" => user.supabase_user_id })
+      .and_return(
+        {
+          "sub" => user.supabase_user_id
+        }
+      )
 
     {
-      "Authorization" => "Bearer test-token"
+      "Authorization" => "Bearer #{token}"
     }
   end
 end
