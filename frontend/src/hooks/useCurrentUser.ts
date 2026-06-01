@@ -1,18 +1,21 @@
-import { useAuth } from "@/providers/AuthProvider";
 import { useMe } from "@/hooks/api/useMe";
+import { useAuth } from "@/providers/AuthProvider";
 
 export function useCurrentUser() {
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading: isAuthLoading } = useAuth();
 
-  const { data, error, isLoading, mutate } = useMe(
-    accessToken ?? undefined
-  );
+  const {
+    data: user,
+    error,
+    isLoading: isUserLoading,
+    mutate,
+  } = useMe(accessToken ?? undefined);
 
   return {
-    user: data,
+    user,
     error,
-    isLoading,
     mutate,
-    isAuthenticated: !!data,
+    isLoading: isAuthLoading || isUserLoading,
+    isAuthenticated: !!user,
   };
 }
