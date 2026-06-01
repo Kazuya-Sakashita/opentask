@@ -1,5 +1,8 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+if (!apiBaseUrl) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL is not set");
+}
 
 type ApiFetchOptions = Omit<RequestInit, "body"> & {
   token?: string;
@@ -12,7 +15,7 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const { token, body, headers, ...fetchOptions } = options;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
     ...fetchOptions,
     headers: {
       "Content-Type": "application/json",
