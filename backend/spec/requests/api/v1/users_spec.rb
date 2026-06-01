@@ -194,6 +194,29 @@ RSpec.describe "Api::V1::Users", type: :request do
       end
     end
 
+    context "roleを指定した場合" do
+      before do
+        patch "/api/v1/users/#{user.public_id}",
+              params: {
+                user: {
+                  name: "更新後ユーザー",
+                  role: "admin"
+                }
+              },
+              headers: auth_headers(user)
+      end
+
+      it "roleは更新されない" do
+        user.reload
+
+        expect(user.name).to eq("更新後ユーザー")
+        expect(user.role).to eq("user")
+        expect(response).to have_http_status(:ok)
+
+        assert_response_schema_confirm(200)
+      end
+    end
+
     context "nameが空の場合" do
       before do
         patch "/api/v1/users/#{user.public_id}",
