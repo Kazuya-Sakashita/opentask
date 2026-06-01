@@ -22,7 +22,8 @@ module Auth
       )
 
       decoded_token.first
-    rescue JWT::DecodeError, JWT::VerificationError, JWT::JWKError
+    rescue JWT::DecodeError, JWT::VerificationError, JWT::JWKError,
+           JSON::ParserError, KeyError, URI::InvalidURIError
       raise UnauthorizedError
     end
 

@@ -29,5 +29,27 @@ RSpec.describe Auth::SupabaseJwtVerifier do
         end.to raise_error(UnauthorizedError)
       end
     end
+
+    context "JWKS取得に失敗する場合" do
+      it "UnauthorizedErrorを発生させる" do
+        allow(JWT).to receive(:decode)
+          .and_raise(JWT::JWKError)
+
+        expect do
+          verifier.call
+        end.to raise_error(UnauthorizedError)
+      end
+    end
+
+    context "JWKSのJSONパースに失敗する場合" do
+      it "UnauthorizedErrorを発生させる" do
+        allow(JWT).to receive(:decode)
+          .and_raise(JSON::ParserError)
+
+        expect do
+          verifier.call
+        end.to raise_error(UnauthorizedError)
+      end
+    end
   end
 end
