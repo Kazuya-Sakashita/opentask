@@ -12,9 +12,14 @@ class ApplicationController < ActionController::API
     @current_user ||= begin
       payload = Auth::SupabaseJwtVerifier.new(bearer_token).call
       supabase_user_id = payload.fetch("sub")
+      email = payload.fetch("email")
 
-      User.find_by!(supabase_user_id:)
-    rescue KeyError, ActiveRecord::RecordNotFound
+      User.find_or_create_by!(supabase_user_id:) do |user|
+        user.email = email
+        user.name = default_user_name(email)
+        user.role = :user
+      end
+    rescue KeyError, ActiveRecord::RecordInvalid
       raise UnauthorizedError
     end
   end
@@ -26,5 +31,9 @@ class ApplicationController < ActionController::API
     raise UnauthorizedError unless scheme == "Bearer" && token.present?
 
     token
+  end
+
+  def default_user_name(email)
+    email.to_s.split("@").first.presence || "User"
   end
 end

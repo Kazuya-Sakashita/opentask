@@ -11,7 +11,8 @@ module AuthHelpers
       .to receive(:call)
       .and_return(
         {
-          "sub" => user.supabase_user_id
+          "sub" => user.supabase_user_id,
+          "email" => user.email
         }
       )
 
