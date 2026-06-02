@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTodos } from "@/hooks/api/useTodos";
+import { useCreateTodo } from "@/hooks/api/useCreateTodo";
 
 export default function TodosPage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -11,6 +13,39 @@ export default function TodosPage() {
     error,
     isLoading: isTodosLoading,
   } = useTodos(accessToken ?? undefined);
+  const { createTodo } = useCreateTodo();
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!accessToken || !title.trim()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createTodo({
+        token: accessToken,
+        payload: {
+          todo: {
+            title: title.trim(),
+            description: description.trim() || null,
+            completed: false,
+          },
+        },
+      });
+
+      setTitle("");
+      setDescription("");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (isAuthLoading || isTodosLoading) {
     return (
@@ -61,6 +96,36 @@ export default function TodosPage() {
           ホームへ
         </Link>
       </div>
+
+      <form onSubmit={handleSubmit} className="mb-8 rounded-lg border p-4">
+        <h2 className="mb-4 font-semibold">新しいTodoを追加</h2>
+
+        <div className="space-y-3">
+          <input
+            type="text"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="タイトル"
+            className="w-full rounded-md border px-3 py-2"
+          />
+
+          <textarea
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="説明"
+            className="w-full rounded-md border px-3 py-2"
+            rows={3}
+          />
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !title.trim()}
+            className="rounded-md border px-4 py-2 font-medium hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? "追加中..." : "追加する"}
+          </button>
+        </div>
+      </form>
 
       {!todos || todos.length === 0 ? (
         <div className="rounded-lg border p-6 text-center text-gray-600">

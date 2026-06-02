@@ -5,7 +5,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useAuth } from "@/providers/AuthProvider";
 
 export default function HomePage() {
-  const { user, isLoading, isAuthenticated } = useCurrentUser();
+  const { user, isLoading } = useCurrentUser();
   const { session } = useAuth();
 
   if (isLoading) {
