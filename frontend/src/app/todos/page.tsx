@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { useAuth } from "@/providers/AuthProvider";
-import { useTodos } from "@/hooks/api/useTodos";
 import { useCreateTodo } from "@/hooks/api/useCreateTodo";
+import { useDeleteTodo } from "@/hooks/api/useDeleteTodo";
+import { useTodos } from "@/hooks/api/useTodos";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function TodosPage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -14,10 +15,12 @@ export default function TodosPage() {
     isLoading: isTodosLoading,
   } = useTodos(accessToken ?? undefined);
   const { createTodo } = useCreateTodo();
+  const { deleteTodo } = useDeleteTodo();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -44,6 +47,27 @@ export default function TodosPage() {
       setDescription("");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (todoId: string) => {
+    if (!accessToken) {
+      return;
+    }
+
+    if (!window.confirm("このTodoを削除しますか？")) {
+      return;
+    }
+
+    setDeletingTodoId(todoId);
+
+    try {
+      await deleteTodo({
+        token: accessToken,
+        todoId,
+      });
+    } finally {
+      setDeletingTodoId(null);
     }
   };
 
@@ -148,9 +172,20 @@ export default function TodosPage() {
                   ) : null}
                 </div>
 
-                <span className="rounded-full border px-2 py-1 text-xs">
-                  {todo.completed ? "完了" : "未完了"}
-                </span>
+                <div className="flex flex-col items-end gap-2">
+                  <span className="rounded-full border px-2 py-1 text-xs">
+                    {todo.completed ? "完了" : "未完了"}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(todo.public_id)}
+                    disabled={deletingTodoId === todo.public_id}
+                    className="rounded-md border px-3 py-1 text-xs text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {deletingTodoId === todo.public_id ? "削除中..." : "削除"}
+                  </button>
+                </div>
               </div>
             </li>
           ))}
