@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { useCreateTodo } from "@/hooks/api/useCreateTodo";
 import { useDeleteTodo } from "@/hooks/api/useDeleteTodo";
 import { useTodos } from "@/hooks/api/useTodos";
+import { useUpdateTodo } from "@/hooks/api/useUpdateTodo";
 import { useAuth } from "@/providers/AuthProvider";
 
 export default function TodosPage() {
@@ -16,11 +17,13 @@ export default function TodosPage() {
   } = useTodos(accessToken ?? undefined);
   const { createTodo } = useCreateTodo();
   const { deleteTodo } = useDeleteTodo();
+  const { updateTodo } = useUpdateTodo();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
+  const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,6 +50,31 @@ export default function TodosPage() {
       setDescription("");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleCompleted = async (
+    todoId: string,
+    completed: boolean
+  ) => {
+    if (!accessToken) {
+      return;
+    }
+
+    setUpdatingTodoId(todoId);
+
+    try {
+      await updateTodo({
+        token: accessToken,
+        todoId,
+        payload: {
+          todo: {
+            completed: !completed,
+          },
+        },
+      });
+    } finally {
+      setUpdatingTodoId(null);
     }
   };
 
@@ -173,9 +201,20 @@ export default function TodosPage() {
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                  <span className="rounded-full border px-2 py-1 text-xs">
-                    {todo.completed ? "完了" : "未完了"}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleToggleCompleted(todo.public_id, todo.completed)
+                    }
+                    disabled={updatingTodoId === todo.public_id}
+                    className="rounded-full border px-2 py-1 text-xs hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {updatingTodoId === todo.public_id
+                      ? "更新中..."
+                      : todo.completed
+                        ? "完了"
+                        : "未完了"}
+                  </button>
 
                   <button
                     type="button"
