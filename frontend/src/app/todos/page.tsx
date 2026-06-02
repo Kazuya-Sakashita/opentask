@@ -1,0 +1,96 @@
+"use client";
+
+import Link from "next/link";
+import { useAuth } from "@/providers/AuthProvider";
+import { useTodos } from "@/hooks/api/useTodos";
+
+export default function TodosPage() {
+  const { accessToken, isLoading: isAuthLoading } = useAuth();
+  const {
+    data: todos,
+    error,
+    isLoading: isTodosLoading,
+  } = useTodos(accessToken ?? undefined);
+
+  if (isAuthLoading || isTodosLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p>読み込み中...</p>
+      </main>
+    );
+  }
+
+  if (!accessToken) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="mb-4">Todoを見るにはログインしてください。</p>
+          <Link
+            href="/login"
+            className="rounded-md border px-4 py-2 font-medium hover:bg-gray-50"
+          >
+            ログインする
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p>Todoの取得に失敗しました。</p>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Todo一覧</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            ログイン中ユーザーのTodoを表示しています。
+          </p>
+        </div>
+
+        <Link
+          href="/"
+          className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          ホームへ
+        </Link>
+      </div>
+
+      {!todos || todos.length === 0 ? (
+        <div className="rounded-lg border p-6 text-center text-gray-600">
+          Todoはまだありません。
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {todos.map((todo) => (
+            <li
+              key={todo.public_id}
+              className="rounded-lg border p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-medium">{todo.title}</h2>
+                  {todo.description ? (
+                    <p className="mt-1 text-sm text-gray-600">
+                      {todo.description}
+                    </p>
+                  ) : null}
+                </div>
+
+                <span className="rounded-full border px-2 py-1 text-xs">
+                  {todo.completed ? "完了" : "未完了"}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  );
+}
