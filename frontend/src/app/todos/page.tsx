@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import type { Todo } from "@/lib/api/todos";
 import { useCreateTodo } from "@/hooks/api/useCreateTodo";
 import { useDeleteTodo } from "@/hooks/api/useDeleteTodo";
 import { useTodos } from "@/hooks/api/useTodos";
@@ -24,6 +25,9 @@ export default function TodosPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
   const [updatingTodoId, setUpdatingTodoId] = useState<string | null>(null);
+  const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [editingDescription, setEditingDescription] = useState("");
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -50,6 +54,43 @@ export default function TodosPage() {
       setDescription("");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleStartEdit = (todo: Todo) => {
+    setEditingTodoId(todo.public_id);
+    setEditingTitle(todo.title);
+    setEditingDescription(todo.description ?? "");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTodoId(null);
+    setEditingTitle("");
+    setEditingDescription("");
+  };
+
+  const handleUpdate = async (todoId: string) => {
+    if (!accessToken || !editingTitle.trim()) {
+      return;
+    }
+
+    setUpdatingTodoId(todoId);
+
+    try {
+      await updateTodo({
+        token: accessToken,
+        todoId,
+        payload: {
+          todo: {
+            title: editingTitle.trim(),
+            description: editingDescription.trim() || null,
+          },
+        },
+      });
+
+      handleCancelEdit();
+    } finally {
+      setUpdatingTodoId(null);
     }
   };
 
@@ -185,49 +226,114 @@ export default function TodosPage() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {todos.map((todo) => (
-            <li
-              key={todo.public_id}
-              className="rounded-lg border p-4 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="font-medium">{todo.title}</h2>
-                  {todo.description ? (
-                    <p className="mt-1 text-sm text-gray-600">
-                      {todo.description}
-                    </p>
+          {todos.map((todo) => {
+            const isEditing = editingTodoId === todo.public_id;
+
+            return (
+              <li
+                key={todo.public_id}
+                className="rounded-lg border p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  {isEditing ? (
+                    <div className="flex-1 space-y-3">
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={(event) =>
+                          setEditingTitle(event.target.value)
+                        }
+                        className="w-full rounded-md border px-3 py-2"
+                      />
+
+                      <textarea
+                        value={editingDescription}
+                        onChange={(event) =>
+                          setEditingDescription(event.target.value)
+                        }
+                        className="w-full rounded-md border px-3 py-2"
+                        rows={3}
+                      />
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdate(todo.public_id)}
+                          disabled={
+                            updatingTodoId === todo.public_id ||
+                            !editingTitle.trim()
+                          }
+                          className="rounded-md border px-3 py-1 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {updatingTodoId === todo.public_id
+                            ? "保存中..."
+                            : "保存"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="rounded-md border px-3 py-1 text-sm hover:bg-gray-50"
+                        >
+                          キャンセル
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <h2 className="font-medium">{todo.title}</h2>
+                      {todo.description ? (
+                        <p className="mt-1 text-sm text-gray-600">
+                          {todo.description}
+                        </p>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {!isEditing ? (
+                    <div className="flex flex-col items-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleToggleCompleted(
+                            todo.public_id,
+                            todo.completed
+                          )
+                        }
+                        disabled={updatingTodoId === todo.public_id}
+                        className="rounded-full border px-2 py-1 text-xs hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {updatingTodoId === todo.public_id
+                          ? "更新中..."
+                          : todo.completed
+                            ? "完了"
+                            : "未完了"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(todo)}
+                        className="rounded-md border px-3 py-1 text-xs hover:bg-gray-50"
+                      >
+                        編集
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(todo.public_id)}
+                        disabled={deletingTodoId === todo.public_id}
+                        className="rounded-md border px-3 py-1 text-xs text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {deletingTodoId === todo.public_id
+                          ? "削除中..."
+                          : "削除"}
+                      </button>
+                    </div>
                   ) : null}
                 </div>
-
-                <div className="flex flex-col items-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleToggleCompleted(todo.public_id, todo.completed)
-                    }
-                    disabled={updatingTodoId === todo.public_id}
-                    className="rounded-full border px-2 py-1 text-xs hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {updatingTodoId === todo.public_id
-                      ? "更新中..."
-                      : todo.completed
-                        ? "完了"
-                        : "未完了"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(todo.public_id)}
-                    disabled={deletingTodoId === todo.public_id}
-                    className="rounded-md border px-3 py-1 text-xs text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {deletingTodoId === todo.public_id ? "削除中..." : "削除"}
-                  </button>
-                </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </main>
