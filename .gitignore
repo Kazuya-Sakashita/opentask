@@ -97,3 +97,8 @@ redis_data/
 
 
 backend/config/master.key
+
+
+# Rails PID files
+backend/tmp/pids/*
+!backend/tmp/pids/.keep
