@@ -8,6 +8,7 @@ import { useDeleteTodo } from "@/hooks/api/useDeleteTodo";
 import { useTodos } from "@/hooks/api/useTodos";
 import { useUpdateTodo } from "@/hooks/api/useUpdateTodo";
 import { useAuth } from "@/providers/AuthProvider";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export default function TodosPage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -188,6 +189,8 @@ export default function TodosPage() {
         >
           ホームへ
         </Link>
+
+         <LogoutButton />
       </div>
 
       <form onSubmit={handleSubmit} className="mb-8 rounded-lg border p-4">
